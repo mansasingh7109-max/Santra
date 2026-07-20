@@ -86,6 +86,145 @@ document.addEventListener("error", function (e) {
   position: relative !important;
   z-index: 1 !important;
 }
+/* ✅ FINAL FIX - Left Patti ke piche product grid fix - 21 JULY 2026 */
+body {
+  overflow-x: hidden !important;
+}
+
+/* Left patti ko by default hide karo */
+#sidebar, #leftPatti, #left-sidebar, #categorySidebar, .left-patti, .sidebar, .category-sidebar, .side-drawer, .left-menu {
+  transform: translateX(-100%) !important;
+  left: -100% !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: all 0.3s ease !important;
+  z-index: 999 !important;
+}
+
+/* Jab open ho tabhi dikhe */
+#sidebar.open, #leftPatti.open, #left-sidebar.open, #categorySidebar.open, .left-patti.open, .sidebar.open, .category-sidebar.open, .side-drawer.open {
+  transform: translateX(0) !important;
+  left: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Product grid ko left patti ke aage lao */
+#productGrid, .product-grid, .products-container, .main-content, #mainContent, .products-wrapper, .hot-deals-section {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  z-index: 1 !important;
+  left: 0 !important;
+}
+
+/* Overlay hatao */
+.sidebar-overlay, #overlay, .overlay, .backdrop {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+.sidebar-overlay.active, #overlay.active, .overlay.active {
+  display: block !important;
+  opacity: 0.5 !important;
+  visibility: visible !important;
+}
+
+/* ✅ Sahi Layout - Left patti rahegi, grid uske aage ayega */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Left wali Customer Login patti - fixed left me */
+#leftSidebar, #customerSidebar, .left-sidebar, div:has(> .customer-login-btn) {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 85px !important;
+  height: 100vh !important;
+  z-index: 999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Main content ko right push karo - piche hide nahi hoga */
+body > div:nth-child(2), 
+#mainContent, 
+.main-content, 
+#productContainer,
+.container {
+  margin-left: 85px !important;
+  width: calc(100% - 85px) !important;
+  max-width: calc(100% - 85px) !important;
+  padding-left: 10px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  left: 0 !important;
+}
+
+/* Product grid full width inside main */
+#productGrid, .product-grid {
+  width: 100% !important;
+  margin-left: 0 !important;
+  padding-left: 5px !important;
+}
+/* ✅ LEFT PATTI WAPAS + GRID SAHI */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Left patti ko wapas lao - fixed left me 85px */
+#leftSidebar, 
+#leftPatti, 
+#customerSidebar, 
+.left-sidebar,
+.left-patti,
+.sidebar {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 85px !important;
+  height: 98vh !important;
+  z-index: 9999 !important;
+  transform: none !important;
+}
+
+/* Product grid ko right push karo - 85px ke baad se start */
+body > div:nth-child(2),
+#mainContent,
+.main-content,
+#app,
+#root,
+.container,
+.main-wrapper {
+  margin-left: 85px !important;
+  width: calc(100% - 85px) !important;
+  max-width: calc(100% - 85px) !important;
+  box-sizing: border-box !important;
+}
+
+/* Search bar aur banner bhi sahi honge */
+#productGrid, .product-grid, .products-wrapper {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+
 </style> 
 
 </head>
@@ -324,6 +463,59 @@ window.addEventListener("storage", updateCartCount);
 <!-- OLD SAVED: <script src="./secrets.js"></script> duplicate tha - comment me rakha -->
 <!-- OLD SAVED: <script src="cache-buster.js"></script> duplicate tha -->
 <!-- OLD SAVED: <script src="mychoice.html"></script> ye galat tha -->
+<script>
+// ✅ LEFT PATTI HATANE KA FINAL FIX
+function fixLeftPatti(){
+  // Sabhi fixed left wali patti dhoondo aur hatao
+  document.querySelectorAll('*').forEach(function(el){
+    try{
+      var s = window.getComputedStyle(el);
+      var w = parseInt(s.width);
+      // Jo bhi left:0 pe fixed hai aur width 120px se kam hai (aapki pink patti 80px ki hai) usko hide karo
+      if(s.position === 'fixed' && s.left === '0px' && w > 10 && w < 150 && s.height !== 'auto'){
+        if(el.innerHTML.includes('Customer') || el.innerHTML.includes('HELP') || w < 120){
+          el.style.display = 'none';
+          el.style.left = '-100%';
+          el.style.transform = 'translateX(-100%)';
+          console.log('✅ Left patti removed:', el);
+        }
+      }
+    }catch(e){}
+  });
+
+  // Product grid ko full width do
+  var grids = document.querySelectorAll('#productGrid, .product-grid, #hotDealsGrid, .products-wrapper, main');
+  grids.forEach(function(g){
+    g.style.marginLeft = '0';
+    g.style.width = '100%';
+    g.style.paddingLeft = '8px';
+    g.style.left = '0';
+  });
+  document.body.style.overflow = 'auto';
+  document.body.style.marginLeft = '0';
+}
+
+// Page load pe 3 baar chalao taaki pakka hat jaye
+window.addEventListener('load', function(){
+  fixLeftPatti();
+  setTimeout(fixLeftPatti, 500);
+  setTimeout(fixLeftPatti, 1500);
+});
+document.addEventListener('DOMContentLoaded', fixLeftPatti);
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(()=>{
+    document.body.style.marginLeft='0';
+    const main = document.querySelector('#mainContent, .main-content, body > div:nth-child(2)');
+    if(main){
+      main.style.marginLeft='85px';
+      main.style.width='calc(100% - 85px)';
+    }
+  }, 500);
+});
+</script>
+
 </body>
 </html>
 
