@@ -326,10 +326,27 @@ console.log(t.presentTime, t.presentDate, t.istDateKey, t.dateTimeIST);
                 document.getElementById("choiceCount").innerText = Object.keys(myChoice).length;
                 if(typeof window.updateCartBadge === 'function') window.updateCartBadge();
             }
-            function shareProduct(id, name, price) {
-                if(typeof window.shareSingleProduct === 'function') window.shareSingleProduct(id);
-                else { let link = `https://santramarketshoppingmall.web.app/product.html?id=${id}`; let text = `Check out *${name}*\nPrice: ₹${price}\n\nBuy here: ${link}`; window.open(`https://wa.me/${window.ADMIN_WHATSAPP}?text=${encodeURIComponent(text)}`, "_blank"); }
-            }
+function shareProduct(id, name, price) {
+    let link = `https://santramarketshoppingmall.web.app/product.html?id=${id}`;
+    let text = `Check out *${name}*\nPrice: ₹${price}\n\nBuy here: ${link}`;
+    if(typeof window.shareSingleProduct === 'function'){
+        window.shareSingleProduct(id);
+    } else {
+        window.open(`https://wa.me/${window.ADMIN_WHATSAPP||'918769171078'}?text=${encodeURIComponent(text)}`, "_blank");
+    }
+    setTimeout(()=>{
+        cart = {};
+        localStorage.setItem(window.CART_KEY||'santraMallCart_v2', JSON.stringify([]));
+        localStorage.setItem("cart", JSON.stringify([]));
+        localStorage.setItem("santra_cart", JSON.stringify([]));
+        localStorage.setItem("cartCount", "0");
+        let u = window.auth? window.auth.currentUser : null;
+        if(u && window.rtdb){ window.rtdb.ref("users/"+u.uid+"/cart").set({}); }
+        saveCart();
+        renderCart();
+        updateCounts();
+    }, 1500);
+}
             function generateOrderData() {
                 let baseURL = "https://santramarketshoppingmall.web.app";
                 if (Object.keys(cart).length === 0) return null;
@@ -345,22 +362,31 @@ console.log(t.presentTime, t.presentDate, t.istDateKey, t.dateTimeIST);
                 text += `*>> IMPORTANT: PLEASE SEND OTP TO CONFIRM THIS ORDER <<*\n*OTP ke bina order confirm nahi hoga*`;
                 return { text, grandTotal, orderId, subtotal, delivery };
             }
-            async function sendOrderToAll() {
+         async function sendOrderToAll() {
                 if(typeof window.shareCart === 'function') { window.shareCart(); return; }
                 const orderData = generateOrderData(); if (!orderData) { alert("❌ Cart empty!"); return; }
                 const btn = document.getElementById("sendOrderBtn"); btn.innerText = "⏳ Sending..."; btn.disabled = true;
                 try {
                     if(window.db) { await window.db.collection("orders").doc(orderData.orderId).set({ orderId: orderData.orderId, total: orderData.grandTotal, status: "Pending", timestamp: firebase.firestore.FieldValue.serverTimestamp() }); }
-                    window.shareCart();
-                    if(typeof santraToast!=='undefined') santraToast("✅ Order Sent!");
-                    btn.innerText = "✅ Sent!"; btn.disabled = false;
-                    cart = {}; saveCart(); renderCart(); return;
-                } catch (e) {
-                    console.log("Error ignored:", e.message);
-                    window.shareCart();
-                    btn.innerText = "✅ Sent!"; btn.disabled = false; return;
-                }
-            }
+// ✅ NEW MESSAGE with Size + Qty + Link + Total
+        window.shareCart(); // ye naya wala message bhejega
+        if(typeof santraToast!=='undefined') santraToast("✅ Order Sent!");
+        btn.innerText = "✅ Sent!";
+        btn.disabled = false;
+        cart = {};
+saveCart();
+renderCart();
+        return;
+        } catch (e) { 
+            console.log("Error ignored:", e.message);
+            window.shareCart(); // error aaye to bhi WhatsApp khulega
+            btn.innerText = "✅ Sent!";
+            btn.disabled = false;
+            return;
+        }
+        btn.innerText = "➡️ Send Order - WhatsApp: 8769171078 | Email: santramarketshoppingmall@gmail.com"; 
+        btn.disabled = false;
+        }
             async function generateAndSharePDF() { if(typeof santraToast!== 'undefined') santraToast("PDF feature coming soon!"); }
 
             document.addEventListener("DOMContentLoaded", function () {
