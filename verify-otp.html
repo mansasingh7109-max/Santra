@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login to Checkout - SANTRA MALL</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#f5f5f5;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+   .login-box{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);max-width:400px;width:100%}
+   .login-box h2{color:#e40046;margin-bottom:15px;text-align:center}
+   .info-box{background:#e3f2fd;border-left:4px solid #2196f3;padding:12px;border-radius:8px;margin-bottom:20px}
+   .info-box h4{margin:0 0 5px 0;font-size:15px}
+   .info-box p{margin:0;font-size:13px;color:#555}
+    input{width:100%;padding:12px;margin:10px 0;border:2px solid #ddd;border-radius:8px;font-size:16px}
+    input:focus{border-color:#e40046;outline:none}
+   .btn-green{width:100%;padding:14px;background:#25d366;color:white;border:none;border-radius:8px;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px}
+   .btn-green:disabled{background:#ccc;cursor:not-allowed}
+   .otp-popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center}
+   .otp-box{background:white;padding:30px;border-radius:12px;text-align:center;max-width:350px;width:90%}
+   .otp-box h3{color:#e40046;margin-bottom:15px}
+   .otp-input{width:100%;padding:15px;border:2px solid #ffc107;border-radius:8px;font-size:24px;text-align:center;letter-spacing:15px;font-weight:bold;margin:15px 0}
+   .btn-verify{width:100%;padding:12px;background:#e40046;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:10px}
+   .btn-change{width:100%;padding:10px;background:#ff9800;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-top:8px;font-size:14px}
+   .btn-cancel{background:#999;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>🔐 Login to Place Order</h2>
+    
+    <div class="info-box">
+      <h4>📦 Checkout ke liye login jaruri hai</h4>
+      <p>WhatsApp pe OTP bhejenge verification ke liye</p>
+    </div>
+
+    <input type="text" id="custName" placeholder="Full Name *" required>
+    <input type="tel" id="custMobile" placeholder="WhatsApp Mobile Number *" maxlength="10" required>
+    <input type="email" id="custEmail" placeholder="Email (Optional)">
+    
+    <button onclick="sendOTPRequest()" class="btn-green" id="getOtpBtn">📱 Get OTP on WhatsApp</button>
+    
+    <p style="font-size:11px;color:#999;text-align:center;margin-top:15px">
+      OTP WhatsApp pe bhejenge. Admin verify karega.
+    </p>
+  </div>
+
+  <!-- OTP Enter Popup -->
+  <div class="otp-popup" id="otpPopup">
+    <div class="otp-box">
+      <h3>📱 WhatsApp OTP Enter Karein</h3>
+      <p style="color:#666;font-size:14px">Admin ne aapke WhatsApp pe OTP bheja hai</p>
+      <p style="color:#999;font-size:12px;margin-top:5px">+91 <span id="showMobile"></span></p>
+      
+      <input type="text" id="enterOTP" class="otp-input" placeholder="000000" maxlength="6">
+      
+      <button onclick="verifyOTP()" class="btn-verify">✅ Verify & Login</button>
+      
+      <!-- ✅ NAYA: Change Mobile Button -->
+      <button onclick="changeMobileNumber()" class="btn-change">✏️ Mobile Number Badlo</button>
+      
+      <button onclick="closeOTPPopup()" class="btn-verify btn-cancel">Cancel</button>
+      
+      <p style="font-size:11px;color:#999;margin-top:15px" id="timerText">OTP check ho raha hai...</p>
+    </div>
+  </div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="constants.js?v=1"></script>
+<script>
+  // Firebase Config - Yahan same config daal jo admin.html me hai
+  
+    const firebaseConfig = {
+    apiKey: "AIzaSyApXIGoX071cYEvGbfhBF69DB9Kv5YlSMA",
+  authDomain: "santramarketshoppingmall.firebaseapp.com",
+  databaseURL: "https://santramarketshoppingmall-default-rtdb.firebaseio.com/",
+  projectId: "santramarketshoppingmall",
+  storageBucket: "santramarketshoppingmall.firebasestorage.app",
+  messagingSenderId: "398490252924",
+  appId: "1:398490252924:web:d1b6348b549183b93b7bf9",
+  measurementId: "G-ZW1ZR8HETY"
+  };
+  
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let currentMobile = '';
+  let checkOTPInterval;
+
+  // Step 1: OTP Request Bhejna
+  function sendOTPRequest() {
+    let name = document.getElementById('custName').value.trim();
+    let mobile = document.getElementById('custMobile').value.trim();
+    let email = document.getElementById('custEmail').value.trim();
+
+    if(name === '' || mobile.length!== 10) {
+      alert('Naam aur 10 digit mobile number jaruri hai');
+      return;
+    }
+
+    document.getElementById('getOtpBtn').disabled = true;
+    document.getElementById('getOtpBtn').innerText = 'Sending Request...';
+
+    // Firebase me request save karo
+    db.collection('login_requests').doc(mobile).set({
+      name: name,
+      mobile: mobile,
+      email: email || '',
+      status: 'pending',
+      otp: '',
+      time: new Date().toLocaleString(),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      currentMobile = mobile;
+      document.getElementById('showMobile').innerText = mobile;
+      document.getElementById('otpPopup').style.display = 'flex';
+      
+      // Har 2 second me check karo ki admin ne OTP daala ya nahi
+      checkOTPInterval = setInterval(checkIfOTPSet, 2000);
+      
+      alert('✅ Request sent! Admin WhatsApp pe OTP bhejega. Yahan wait karo.');
+    }).catch((error) => {
+      alert('❌ Error: ' + error.message);
+      document.getElementById('getOtpBtn').disabled = false;
+      document.getElementById('getOtpBtn').innerText = '📱 Get OTP on WhatsApp';
+    });
+  }
+
+  // Step 2: Check karo admin ne OTP daala ya nahi
+  function checkIfOTPSet() {
+    db.collection('login_requests').doc(currentMobile).get().then((doc) => {
+      if(doc.exists && doc.data().otp && doc.data().otp.length === 6) {
+        clearInterval(checkOTPInterval);
+        document.getElementById('timerText').innerHTML = '<span style="color:#10b981;font-weight:bold">✅ OTP aa gaya! Ab enter karo</span>';
+        document.getElementById('enterOTP').focus();
+      }
+    });
+  }
+
+  // Step 3: OTP Verify Karo
+  function verifyOTP() {
+    let enteredOTP = document.getElementById('enterOTP').value.trim();
+    
+    if(enteredOTP.length!== 6) {
+      alert('6 digit OTP daalo');
+      return;
+    }
+
+    db.collection('login_requests').doc(currentMobile).get().then((doc) => {
+      if(doc.exists && doc.data().otp === enteredOTP) {
+        // OTP Sahi hai
+        localStorage.setItem('santra_customer', JSON.stringify({
+          name: doc.data().name,
+          mobile: currentMobile,
+          email: doc.data().email,
+          loginTime: new Date().toISOString()
+        }));
+        
+        // Status update karo
+        db.collection('login_requests').doc(currentMobile).update({
+          status: 'verified',
+          verifiedTime: new Date().toLocaleString()
+        });
+
+        alert('✅ Login Success! Welcome ' + doc.data().name);
+        window.location.href = 'index.html'; // Ya checkout page
+      } else {
+        alert('❌ Galat OTP! Admin se sahi OTP maango');
+        document.getElementById('enterOTP').value = '';
+      }
+    });
+  }
+
+  // ✅ NAYA: Mobile Number Change Karne ka Function
+  function changeMobileNumber() {
+    if(confirm('Mobile number change karna hai? Purana request cancel ho jayega.')) {
+      // Purana request delete karo
+      db.collection('login_requests').doc(currentMobile).delete().then(() => {
+        clearInterval(checkOTPInterval);
+        document.getElementById('otpPopup').style.display = 'none';
+        document.getElementById('enterOTP').value = '';
+        document.getElementById('custMobile').value = '';
+        document.getElementById('custMobile').focus();
+        document.getElementById('getOtpBtn').disabled = false;
+        document.getElementById('getOtpBtn').innerText = '📱 Get OTP on WhatsApp';
+        currentMobile = '';
+        alert('✅ Ab naya mobile number daal ke OTP maango');
+      }).catch((error) => {
+        alert('❌ Error: ' + error.message);
+      });
+    }
+  }
+
+  function closeOTPPopup() {
+    if(confirm('OTP verification cancel karna hai?')) {
+      db.collection('login_requests').doc(currentMobile).delete();
+      document.getElementById('otpPopup').style.display = 'none';
+      document.getElementById('getOtpBtn').disabled = false;
+      document.getElementById('getOtpBtn').innerText = '📱 Get OTP on WhatsApp';
+      clearInterval(checkOTPInterval);
+      currentMobile = '';
+    }
+  }
+</script>
+</body>
+</html>
