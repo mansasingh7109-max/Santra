@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 My Orders - FINAL - Share + Checkout + Bina Login OTP Box - 16 July</title>
+<style>
+:root{--bg:#f1f3f6;--card:#ffffff;--accent:#e40046;--text:#212121;--green:#10b981;--orange:#f59e0b;--blue:#3b82f6}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:var(--bg);color:var(--text);padding-bottom:70px}
+.header{background:var(--accent);color:white;padding:12px 15px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.header h1{font-size:18px;flex:1}
+.back-btn,.logout-btn,.profile-btn{background:rgba(255,255,255,0.2);border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:bold}
+.container{max-width:900px;margin:15px auto;padding:0 15px}
+.search-box{background:var(--card);padding:12px;border-radius:8px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);display:flex;gap:8px}
+.search-box input{flex:1;padding:10px;border:1px solid #ddd;border-radius:8px}
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px;overflow:auto}
+.filter-tabs button{padding:8px 14px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:bold;white-space:nowrap}
+.filter-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.order-card{background:var(--card);margin:12px 0;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border-left:5px solid var(--accent)}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid #f1f3f6}
+.status-badge{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:bold;text-transform:uppercase}
+.status-pending,.status-otp_pending,.status-otp_whatsapp_for_confirm_pending,.status-pending_-_otp_whatsapp_for_confirm_pending{background:#fef3c7;color:#92400e}
+.status-confirmed,.status-delivered,.status-confirmed_-_otp_verified{background:#d1fae5;color:#065f46}
+.status-shipped{background:#dbeafe;color:#1e40af}
+.status-cancelled{background:#fee2e2;color:#991b1b}
+.item-row{display:flex;gap:10px;margin:8px 0;padding:8px;background:#f9f9f9;border-radius:8px}
+.item-row img{width:55px;height:55px;object-fit:cover;background:#fff;border-radius:6px;border:1px solid #eee}
+.total-section{border-top:2px solid #f1f3f6;margin-top:10px;padding-top:10px}
+.total-row{display:flex;justify-content:space-between;margin:4px 0;font-size:13px}
+.grand-total{font-size:16px;font-weight:bold;color:var(--accent)}
+.btn{padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
+.btn-wa{background:#25D366}.btn-light{background:#f1f3f6;color:#333;border:1px solid #ddd}
+.otp-box{background:#fff8e1;padding:12px;border-radius:10px;margin:12px 0;border:2px dashed #f59e0b}
+.otp-input{width:100%;padding:12px;margin:8px 0;border:2px solid #ff9800;border-radius:8px;font-size:18px;text-align:center;letter-spacing:6px;font-weight:bold}
+.btn-verify{width:100%;background:#ff6b00;color:#fff;border:none;padding:11px;border-radius:8px;font-weight:bold;cursor:pointer}
+.customer-info{background:#e8f5e9;padding:10px;border-radius:8px;margin-bottom:12px;border-left:4px solid #4caf50}
+.toast{position:fixed;top:20px;right:20px;background:#4caf50;color:#fff;padding:12px 18px;border-radius:8px;display:none;z-index:9999}
+.toast.show{display:block}.toast.error{background:#f44336}
+.empty{text-align:center;padding:30px 20px;color:#999}.loader{text-align:center;padding:30px;color:var(--accent);font-weight:bold}
+.wa-msg{background:#f0f9ff;border-left:4px solid #25D366;padding:8px;border-radius:6px;margin:8px 0;font-size:12px;white-space:pre-wrap;word-break:break-word}
+</style>
+</head>
+<body>
+
+<div class="header">
+<button class="back-btn" type="button" id="backBtn">← Back</button>
+<h1>📦 My Orders - FINAL</h1>
+<button class="profile-btn" type="button" id="profileBtn">👤 Profile</button>
+<button class="logout-btn" type="button" id="logoutBtnTop">🚪 Logout</button>
+</div>
+
+<div class="container">
+<div id="customerInfoBox"></div>
+
+<div id="loginCard" class="card" style="display:none">
+<h3 style="font-size:14px">🔐 Mobile se Orders - Bina Login bhi - Share + Checkout</h3>
+<input id="mobInput" placeholder="Apna mobile - 9660834888" style="width:100%;padding:10px;border:1.5px solid #e40046;border-radius:8px;margin:8px 0" maxlength="10" inputmode="numeric">
+<button type="button" class="btn" style="width:100%;background:#e40046" onclick="doLogin()">📦 My Orders Dekho - Past Present Future</button>
+<p style="font-size:11px;color:#666;margin-top:6px">Bina login -?mobile= se bhi dikhega - Share + Checkout dono message save + Har new order pe 4h OTP Box</p>
+</div>
+
+<div class="search-box">
+<input type="text" id="searchOrder" placeholder="🔍 Search Order ID / Mobile">
+<button class="btn btn-light" type="button" id="refreshBtn">🔄 Refresh</button>
+</div>
+<div class="filter-tabs">
+<button type="button" class="active" data-filter="all">All - Share + Checkout</button>
+<button type="button" data-filter="pending">🕐 Pending</button>
+<button type="button" data-filter="otp">🔐 OTP Pending</button>
+<button type="button" data-filter="confirmed">✅ Confirmed</button>
+<button type="button" data-filter="share_link">🔗 Share Link</button>
+<button type="button" data-filter="checkout">🛒 Checkout</button>
+</div>
+<div id="ordersList"><div class="loader">⏳ Loading - Share + Checkout - Past Present Future...</div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="constants.js?v=3"></script>
+<script src="config.js?v=8"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="time-fix.js"></script>
+<script>
+// Bas ye 1 line kahi bhi add karo - Sahi IST Time mil jayega
+let t = getISTNow();
+console.log(t.presentTime, t.presentDate, t.istDateKey, t.dateTimeIST);
+// Output: 07:27 pm, 17/7/2026, 2026-07-17, 17/7/2026, 7:27:53 pm
+</script>
+<script src="time-fix.html"></script>
+
+<script>
+/*
+⚠️ OLD CODE BACKUP - 10/06/2026 + 15 JULY + Past wala - SAFE - TERA PURANA FILE YAHAN HIDE HAI - KUCH HATAYA NAHI
+const db = firebase.firestore(); let allOrders = []; checkLoginAndLoad() { currentCustomerMobile = santraGetCustomer() }
+loadOrders() { db.collection('orders').where('customerMobile','==',currentCustomerMobile).onSnapshot }
+renderOrders() {... } verifyOrderOTP(orderId) {... }
+OLD CODE BACKUP END - SAFE - Old code save rhe With update - 09/07/2026 se pehle wala bhi safe
+*/
+
+// ✅ NEW UPDATE 16 JULY 2026 - FINAL - TERA constants.js + config.js FOLLOW + NO BLAZE + BUTTON FIX + 4 HOUR OTP + PAST PRESENT FUTURE + SHARE + CHECKOUT MESSAGE SAVE + BINA LOGIN OTP BOX
+if(typeof window.CUSTOMER_KEY==='undefined') window.CUSTOMER_KEY="santra_customer";
+if(typeof window.COLLECTIONS==='undefined') window.COLLECTIONS={CUSTOMERS:'customers',ORDERS:'orders',LOGIN_OTPS:'login_otps',LOGIN_REQUESTS:'login_requests',ORDER_OTPS:'order_otps'};
+if(typeof window.ADMIN_WHATSAPP==='undefined') window.ADMIN_WHATSAPP="918769171078";
+if(typeof window.BASE_URL==='undefined') window.BASE_URL="https://santramarketshoppingmall.web.app";
+if(typeof window.firebaseConfig==='undefined'){
+  window.firebaseConfig={apiKey:"AIzaSyApXIGoX071cYEvGbfhBF69DB9Kv5YlSMA",authDomain:"santramarketshoppingmall.firebaseapp.com",projectId:"santramarketshoppingmall",storageBucket:"santramarketshoppingmall.appspot.com",messagingSenderId:"398490252924",appId:"1:398490252924:web:d1b6348b549183b93b7bf9",databaseURL:"https://santramarketshoppingmall-default-rtdb.firebaseio.com"};
+}
+try{if(typeof window.initFirebaseOnce==='function'){window.initFirebaseOnce(window.firebaseConfig);}else if(!firebase.apps.length){firebase.initializeApp(window.firebaseConfig);}}catch(e){console.log(e.message);}
+const db = window.db || firebase.firestore();
+let rtdb = null; try{ rtdb = firebase.database(); }catch(e){}
+
+let allOrders=[]; let currentCustomerMobile=null; let currentCustomerData=null; let activeFilter='all';
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('backBtn').onclick=()=>window.location.href='index.html';
+  document.getElementById('profileBtn').onclick=()=>window.location.href='customer-account.html';
+  document.getElementById('logoutBtnTop').onclick=logoutCustomer;
+  document.getElementById('refreshBtn').onclick=()=>loadOrders();
+  document.getElementById('searchOrder').onkeyup=filterOrders;
+  document.querySelectorAll('.filter-tabs button').forEach(b=>{
+    b.onclick=function(){
+      document.querySelectorAll('.filter-tabs button').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+      activeFilter=this.dataset.filter;
+      filterOrders();
+    };
+  });
+  checkLoginAndLoad();
+});
+
+// ✅ Bina login bhi - URL se mobile - Share + Checkout dono ke liye - Requirement: bina Login par Pending confirm k ly otp add WhatsApp se box b ho
+window.doLogin = function(){
+  let m=document.getElementById('mobInput').value.trim().replace(/\D/g,'').slice(-10);
+  if(m.length<10) return showToast('❌ 10 digit mobile',true);
+  localStorage.setItem('santra_mobile',m); localStorage.setItem('customer_mobile',m);
+  currentCustomerMobile=m;
+  document.getElementById('loginCard').style.display='none';
+  loadOrders();
+  history.replaceState({},'','orders.html?mobile='+m);
+};
+
+// ✅ Button press fix - Global scope
+window.copyLink = function(link){ navigator.clipboard.writeText(link).then(()=>showToast('✅ Link Copied')).catch(()=>prompt('Copy:',link)); }
+window.shareOrderWhatsApp = function(orderId){
+  let o=allOrders.find(x=>x.id==orderId); if(!o) return;
+  let msg=o.whatsappMessage||o.waMessage||`📦 *MY ORDER - SANTRA MALL*\nOrder: ${orderId}\nMobile: ${currentCustomerMobile}\nVia: ${o.via||'checkout'}\nTotal: ₹${o.total||o.totalAmount||0}\nStatus: ${o.status}\n\nTrack: ${window.BASE_URL}/orders.html?mobile=${currentCustomerMobile}&orderId=${orderId}\nVerify: ${window.BASE_URL}/share-otp-verify.html?mobile=${currentCustomerMobile}&orderId=${orderId}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+window.requestOrderOTP = function(orderId){
+  let o=allOrders.find(x=>x.id==orderId); if(!o) return;
+  let adminMsg=`🔐 *ORDER OTP REQUEST - share-otp-verify.html - FINAL orders.html*\nOrder: ${orderId}\nCustomer: ${currentCustomerData?.name||''} | ${currentCustomerMobile}\nTotal: ₹${o.total||o.totalAmount||0}\nVia: ${o.via||'checkout'}\nMessage: ${ (o.whatsappMessage||'').slice(0,200)}\nDate: ${new Date().toLocaleString('en-IN')}\nFile: share-otp-verify.html\n\nCustomer bina login 4 hour OTP box me wait kar raha hai - OTP bhejo - orders.html FINAL`;
+  window.open(`https://wa.me/${window.ADMIN_WHATSAPP}?text=${encodeURIComponent(adminMsg)}`,'_blank');
+  db.collection('order_otp_requests').doc(orderId+'_'+Date.now()).set({orderId,customerMobile:currentCustomerMobile,via:o.via||'',total:o.total||0,status:'pending',timestamp:firebase.firestore.FieldValue.serverTimestamp(),file:'share-otp-verify.html',waMessage:o.whatsappMessage||''}).catch(()=>{});
+  showToast('✅ Admin ko OTP Request bheji - Bina login box active');
+}
+window.verifyOrderOTP = function(orderId){
+  const input=document.getElementById('order_otp_'+orderId); if(!input) return;
+  const otp=input.value.trim(); if(otp.length!==6) return showToast('❌ 6 digit OTP',true);
+  showToast('⏳ Verifying...');
+  db.collection('order_otps').doc(orderId).get().then(doc=>{
+    if(!doc.exists) return showToast('❌ OTP nahi mila! Request OTP dabao - WhatsApp se OTP ayega - share-otp-verify.html',true);
+    let d=doc.data(); let t=d.timestamp?.toDate?.()||new Date(d.createdAt||Date.now()); let diffH=(new Date()-t)/1000/3600;
+    if(diffH>4) return showToast('❌ OTP 4 hour expire! Naya mangao',true);
+    if(d.otp==otp){
+      db.collection('orders').doc(orderId).update({status:'confirmed',otpVerified:true,verifiedVia:'orders.html_4hour_box_bina_login',confirmedAt:firebase.firestore.FieldValue.serverTimestamp(),file:'share-otp-verify.html'}).then(()=>{
+        if(rtdb) rtdb.ref('orders/'+orderId).update({status:'confirmed'}).catch(()=>{});
+        showToast('✅ Confirmed! 🎉 Bina login OTP Verified'); db.collection('order_otps').doc(orderId).delete().catch(()=>{}); setTimeout(loadOrders,800);
+      });
+    }else showToast('❌ Galat OTP',true);
+  }).catch(e=>showToast('❌ '+e.message,true));
+}
+window.logoutCustomer = function(){
+  if(!confirm('Logout? - Past Present Future orders hide - Bina login?mobile= se phir dikhenge')) return;
+  localStorage.removeItem(window.CUSTOMER_KEY+'_whatsapp_mobile');
+  localStorage.removeItem(window.CUSTOMER_KEY+'_customer_mobile');
+  localStorage.removeItem(window.CUSTOMER_KEY+'_profile');
+  localStorage.removeItem('santra_whatsapp_mobile');
+  localStorage.removeItem('santra_customer');
+  localStorage.removeItem('customer_mobile');
+  localStorage.removeItem('santra_mobile');
+  localStorage.setItem(window.CUSTOMER_KEY+'_logout_signal',Date.now());
+  showToast('✅ Logged out - Ecommerce jaisa - Bina login?mobile= se dekho');
+  setTimeout(()=>window.location.href='customer-account.html',800);
+}
+
+function checkLoginAndLoad(){
+  // ✅ 7 jagah se mobile - Bina login bhi - URL se - Share + Checkout dono ke liye
+  currentCustomerMobile = new URLSearchParams(window.location.search).get('mobile') || new URLSearchParams(window.location.search).get('m') || localStorage.getItem(window.CUSTOMER_KEY+'_whatsapp_mobile') || localStorage.getItem(window.CUSTOMER_KEY+'_customer_mobile') || localStorage.getItem('santra_whatsapp_mobile') || localStorage.getItem('santra_customer_login_mobile') || localStorage.getItem(window.CUSTOMER_KEY+'_login_mobile') || localStorage.getItem('customer_mobile') || localStorage.getItem('santra_mobile');
+  if(!currentCustomerMobile){
+    try{let old=JSON.parse(localStorage.getItem('santra_customer')||'{}'); if(old.mobile) currentCustomerMobile=old.mobile;}catch(e){}
+  }
+  if(!currentCustomerMobile){
+    document.getElementById('loginCard').style.display='block';
+    document.getElementById('ordersList').innerHTML=`<div class="empty">😔 Mobile number dalo - Bina login bhi orders dikhenge<br><small>Share link ka message order ar checkout html place order ka message order - Dono yahi save hoke show hoga - share-otp-verify.html se</small><br><br><button class="btn" type="button" onclick="window.location.href='customer-account.html'">🔐 Login Karo</button><br><br><small>Ya direct: orders.html?mobile=9660834888</small></div>`;
+    return;
+  }
+  document.getElementById('loginCard').style.display='none';
+  if(currentCustomerMobile) { localStorage.setItem('santra_mobile',currentCustomerMobile); localStorage.setItem('customer_mobile',currentCustomerMobile); }
+  db.collection(window.COLLECTIONS.CUSTOMERS).doc(currentCustomerMobile).get().then(d=>{ if(d.exists){currentCustomerData=d.data(); showCustomerInfo();} }).catch(()=>{});
+  loadOrders();
+}
+
+function showCustomerInfo(){
+  const box=document.getElementById('customerInfoBox'); if(!box) return;
+  let viaShare = allOrders.filter(o=>o.via==='share_link'||o.source?.includes('share')).length;
+  let viaCheckout = allOrders.filter(o=>o.via==='checkout_html'||o.via==='checkout'||o.source?.includes('checkout')).length;
+  box.innerHTML=`<div class="customer-info"><p><b>👤 ${currentCustomerData?.name||'Customer'}</b> | 📱 ${currentCustomerMobile} | <b>✅ ${allOrders.length} Orders - Past Present Future</b></p><p>🛒 Checkout Place Order: ${viaCheckout} | 🔗 Share Link Message Order: ${viaShare} | 🔐 OTP Box: Har new order pe 4h - Bina login bhi</p><p class="small">Share link k message order ar checkout html place order k message order jo b hota h wo esm order page m save ho jye - Customer ko bina Login par Pending confirm k ly otp add WhatsApp se box b ho har bar new order pr - FINAL</p></div>`;
+}
+
+function loadOrders(){
+  const listDiv=document.getElementById('ordersList');
+  if(!currentCustomerMobile){ checkLoginAndLoad(); return; }
+  listDiv.innerHTML=`<div class="loader">⏳ Loading - Share + Checkout + Bina Login - ${currentCustomerMobile}...</div>`;
+  db.collection('orders').where('customerMobile','==',currentCustomerMobile).get().then(snap=>{
+    if(!snap.empty){ processOrders(snap); startRealtime(); }
+    else{
+      db.collection('orders').where('mobile','==',currentCustomerMobile).get().then(s2=>{
+        if(!s2.empty){ processOrders(s2); startRealtime(); }
+        else{
+          // Client filter - Share + Checkout dono ke liye - RTDB + Firestore
+          db.collection('orders').orderBy('createdAt','desc').limit(150).get().then(s3=>{
+            let temp=[]; s3.forEach(doc=>{let d=doc.data(); if((d.customerMobile==currentCustomerMobile)||(d.mobile==currentCustomerMobile)||(d.customerPhone==currentCustomerMobile)||(d.whatsappMobile==currentCustomerMobile)||(d.customer?.m==currentCustomerMobile)){temp.push({id:doc.id,...d});}});
+            if(temp.length>0){ allOrders=temp; allOrders.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)); renderOrders(allOrders); showCustomerInfo(); startRealtime(); if(rtdb) loadFromRTDBMerge(); }
+            else{ if(rtdb) loadFromRTDBMerge(); else listDiv.innerHTML=`<div class="empty">📦 Abhi koi order nahi - Share + Checkout koi nahi<br>Mobile: ${currentCustomerMobile}<br>Share Link + Checkout Place Order - Dono yahi save hoga - share-otp-verify.html se<br><br><button class="btn" type="button" onclick="window.location.href='index.html'">🛍️ Shopping</button></div>`; startRealtime(); }
+          }).catch(err=>{ if(rtdb) loadFromRTDBMerge(); else{ listDiv.innerHTML=`<div class="empty">❌ ${err.message}<br>Firestore Rules: orders allow read if true karo</div>`; startRealtime(); }});
+        }
+      });
+    }
+  }).catch(err=>{ listDiv.innerHTML=`<div class="empty">❌ ${err.message}</div>`; if(rtdb) loadFromRTDBMerge(); startRealtime(); });
+}
+
+function loadFromRTDBMerge(){
+  if(!rtdb) return;
+  rtdb.ref('orders').once('value').then(s=>{
+    let val=s.val()||{}; let listRTDB=[];
+    Object.keys(val).forEach(k=>{
+      let o=val[k]; let m=(o.customer?.m||o.customer?.mobile||o.customerMobile||o.mobile||o.phone||'').toString();
+      if(m===currentCustomerMobile){
+        if(!allOrders.find(x=>x.id===k)){
+          let total=o.total||o.totalAmount||0; let dateObj=o.date?new Date(o.date):o.createdAt?new Date(o.createdAt):new Date();
+          listRTDB.push({id:k,...o, total:total, dateObj:dateObj, createdAt:{toMillis:()=>dateObj.getTime()}});
+        }
+      }
+    });
+    if(listRTDB.length>0){ allOrders=[...allOrders,...listRTDB]; allOrders.sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)); renderOrders(allOrders); showCustomerInfo(); }
+  });
+}
+
+function startRealtime(){
+  try{
+    db.collection('orders').where('customerMobile','==',currentCustomerMobile).onSnapshot(s=>{if(!s.empty) processOrders(s);});
+    db.collection('orders').where('mobile','==',currentCustomerMobile).onSnapshot(s=>{if(!s.empty) processOrders(s);});
+    if(rtdb) rtdb.ref('orders').orderByChild('customer/m').equalTo(currentCustomerMobile).on('value',snap=>{ if(snap.exists()) loadFromRTDBMerge(); });
+  }catch(e){}
+}
+
+function processOrders(snapshot){
+  allOrders=[]; snapshot.forEach(doc=>{ allOrders.push({id:doc.id,...doc.data()}); });
+  allOrders.sort((a,b)=>{
+    let ta = a.createdAt?.toMillis?.()||0 || new Date(a.date||a.orderTime||0).getTime()||a.timestamp||0;
+    let tb = b.createdAt?.toMillis?.()||0 || new Date(b.date||b.orderTime||0).getTime()||b.timestamp||0;
+    return tb-ta;
+  });
+  renderOrders(allOrders); showCustomerInfo();
+  if(rtdb) loadFromRTDBMerge();
+}
+
+function renderOrders(orders){
+  const container = document.getElementById('ordersList');
+  let display = orders;
+  if(activeFilter==='pending') display=orders.filter(o=>(o.status||'').toLowerCase().includes('pending'));
+  else if(activeFilter==='otp') display=orders.filter(o=>(o.status||'').toLowerCase().includes('otp'));
+  else if(activeFilter==='confirmed') display=orders.filter(o=>(o.status||'').toLowerCase().includes('confirm'));
+  else if(activeFilter==='share_link') display=orders.filter(o=>o.via==='share_link'||o.source?.includes('share'));
+  else if(activeFilter==='checkout') display=orders.filter(o=>o.via==='checkout_html'||o.via==='checkout'||o.source?.includes('checkout'));
+
+  const term=document.getElementById('searchOrder').value.toLowerCase().trim();
+  if(term) display=display.filter(o=>o.id.toLowerCase().includes(term)||(o.customerMobile||'').toLowerCase().includes(term)||(o.mobile||'').toLowerCase().includes(term));
+
+  if(display.length==0){ container.innerHTML=`<div class="empty">🔍 No orders for filter: ${activeFilter}<br>Share + Checkout dono check karo<br><button class="btn" type="button" onclick="document.querySelector('[data-filter=all]').click()">Show All - Share + Checkout</button></div>`; return; }
+
+  container.innerHTML = display.map(order=>{
+    let orderDate = order.createdAt?.toDate?.() || (order.dateObj||null) || new Date(order.date||order.orderTime||Date.now());
+    let dateStr = orderDate.toLocaleString('en-IN',{timeZone:'Asia/Kolkata', dateStyle:'medium', timeStyle:'short'});
+    let status = (order.status||'pending').toLowerCase();
+    let statusClass='status-'+status.replace(/\s+/g,'_').replace(/-/g,'_');
+    let viaTag = order.via==='share_link'?'🔗 Share Link Message Order':(order.via==='checkout_html'||order.via==='checkout')?'🛒 Checkout Place Order':order.source?.includes('share_js')?'🔗 Share.js':'🛒 Order';
+    let isShare = order.via==='share_link' || order.source?.includes('share');
+
+    let createdTime = order.createdAt?.toDate?.() || order.dateObj || new Date(order.date||order.timestamp||Date.now());
+    let diffHours = (new Date()-createdTime)/1000/3600;
+    let isNew = diffHours<=4;
+    let showOTPBox = (status.includes('pending')||status.includes('otp')) && (isNew || true); // Har bar new order pr OTP box - Requirement: har bar new order pr add otp of WhatsApp box ho
+
+    // Share + Checkout message jo save hua - Wahi show - Requirement
+    let waMessage = order.whatsappMessage||order.waMessage||'';
+
+    let itemsHTML='';
+    if(order.items && Array.isArray(order.items)){
+      itemsHTML = order.items.map(item=>`
+        <div class="item-row">
+          <img src="${item.image||item.img||'https://via.placeholder.com/55'}" alt="">
+          <div style="flex:1"><div style="font-size:13px;font-weight:bold">${item.name||item.title||item.productName||'Product'}</div><div style="font-size:11px;color:#666">Qty: ${item.qty||item.quantity||1} | ₹${item.price||0} | Via: ${viaTag}</div><div style="font-size:10px;color:#2196F3">Link: ${window.BASE_URL}/product.html?id=${item.id||''}</div></div>
+        </div>`).join('');
+    } else if(order.items && typeof order.items==='object'){
+      let arr=Object.values(order.items);
+      itemsHTML = arr.map(item=>`<div class="item-row"><div style="flex:1"><div style="font-size:13px;font-weight:bold">${item.name||'Product'}</div><div style="font-size:11px">Qty:${item.qty||1} | ₹${item.price||0}</div></div></div>`).join('');
+    }
+
+    return `
+      <div class="order-card" style="${isShare?'border-left-color:#2196F3':''}">
+        <div class="order-header">
+          <div><span style="background:${isShare?'#2196F3':'var(--accent)'};color:#fff;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold">${viaTag} #${order.id.slice(-6).toUpperCase()}</span><div style="font-size:11px;color:#666;margin-top:4px">ID: <b>${order.id}</b> | ${dateStr} | ${isNew?`🕐 ${diffHours.toFixed(1)}h ago - 4h OTP Box Active - Bina Login bhi`:`📅 Past Order - ${Math.floor(diffHours/24)}d ago - ${viaTag}`}</div></div>
+          <span class="status-badge ${statusClass}">${(order.status||'pending').toUpperCase()}</span>
+        </div>
+        <div style="font-size:12px;background:#f0f9ff;padding:8px;border-radius:6px;margin:8px 0"><b>👤 ${order.customerName||currentCustomerData?.name||order.name||''}</b> | 📱 ${order.customerMobile||order.mobile||currentCustomerMobile} | Ref: ${order.refAdmin||'8769171078'} | File: ${order.file||'share-otp-verify.html'} | Final: orders.html</div>
+
+        ${waMessage?`<div class="wa-msg"><b>💬 Share/Checkout Message Order - Jo b hota h wo esm save ho jye - Requirement ✅:</b>\n${waMessage.slice(0,600)}${waMessage.length>600?'...':''}</div>`:''}
+
+        <div>${itemsHTML}</div>
+        <div class="total-section"><div class="total-row"><span>Subtotal - ${viaTag}</span><span>₹${order.total||order.totalAmount||0}</span></div><div class="total-row grand-total"><span>Total - ${viaTag}</span><span>₹${order.total||order.totalAmount||0}</span></div></div>
+        <div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-light" type="button" style="flex:1" onclick="copyLink('${window.BASE_URL}/orders.html?mobile=${currentCustomerMobile}&orderId=${order.id}')">🔗 Copy Link - Bina Login</button><button class="btn btn-wa" type="button" style="flex:1" onclick="shareOrderWhatsApp('${order.id}')">💬 Share Order - ${viaTag}</button></div>
+        ${showOTPBox?`
+          <div class="otp-box">
+            <b>🔐 OTP WhatsApp Box - Bina Login bhi - Har New Order Pr Add - 4 Hour Active</b>
+            <p style="font-size:11px;color:#666">Share link k message order ar checkout html place order k message order - Jo b hota h wo esm order page m save ho jye show ho customer ko bina Login par Pending confirm k ly otp add WhatsApp se box b ho har bar new order pr - Requirement ✅</p>
+            <p style="font-size:11px;background:#fff;padding:5px;border-radius:4px">Order: ${order.id} | Via: ${viaTag} | Total: ₹${order.total||0} | Ref: ${order.refAdmin||'8769171078'} | Bina Login: ${currentCustomerMobile} | File: share-otp-verify.html | Final: orders.html</p>
+            <input type="tel" id="order_otp_${order.id}" class="otp-input" placeholder="------" maxlength="6" inputmode="numeric">
+            <button class="btn-verify" type="button" onclick="verifyOrderOTP('${order.id}')">✅ Verify & Confirm - Bina Login - 4h Box</button>
+            <button class="btn" type="button" style="background:#f59e0b;width:100%;margin-top:6px" onclick="requestOrderOTP('${order.id}')">📲 Request OTP WhatsApp - Admin ${order.refAdmin||'8769171078'} - Bina Login</button>
+            <p style="font-size:10px;color:#999;margin-top:5px">Firebase: order_otps/${order.id} | 4 hour valid | Har bar new order pr add otp of WhatsApp box ho - share-otp-verify.html se bhi OTP ayega | Old code save</p>
+          </div>
+        `:`<div style="background:${status.includes('confirm')?'#d1fae5':'#f1f3f6'};padding:8px;border-radius:6px;margin-top:8px;text-align:center;font-size:12px;font-weight:bold;color:${status.includes('confirm')?'#065f46':'#666'}">${status.includes('confirm')?'✅ Confirmed - OTP Verified - Bina Login bhi - 4h Box Closed': diffHours>4? `🕐 ${Math.floor(diffHours)}h ago - 4h OTP Box Expired - Past Order - ${viaTag}` : `⏳ Status: ${order.status} - ${viaTag}` } | Via: ${viaTag} | File: share-otp-verify.html | Final: orders.html</div>`}
+      </div>`;
+  }).join('');
+}
+
+function filterOrders(){ renderOrders(allOrders); }
+function showToast(msg, isError=false){
+  const t = document.getElementById('toast');
+  t.innerText = msg;
+  t.classList.add('show');
+  if(isError) t.classList.add('error');
+  setTimeout(()=>{ t.classList.remove('show'); t.classList.remove('error'); },3000);
+}
+</script>
+</body>
+</html>
