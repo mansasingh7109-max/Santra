@@ -24,14 +24,14 @@
             if (typeof window.initFirebaseOnce === 'function') {
                 window.initFirebaseOnce({
                     apiKey: "AIzaSyApXIGoX071cYEvGbfhBF69DB9Kv5YlSMA",
-                    authDomain: "santramarketshoppingmall.firebaseapp.com",
-                    projectId: "santramarketshoppingmall",
-                    storageBucket: "santramarketshoppingmall.appspot.com",
-                    messagingSenderId: "398490252924",
-                    appId: "1:398490252924:web:d1b6348b549183b93b7bf9",
-                    measurementId: "G-ZW1ZR8HETY",
-                    databaseURL: "https://santramarketshoppingmall-default-rtdb.firebaseio.com/"
-                });
+    authDomain: "santramarketshoppingmall.firebaseapp.com",
+    projectId: "santramarketshoppingmall",
+    storageBucket: "santramarketshoppingmall.appspot.com",
+    messagingSenderId: "398490252924",
+    appId: "1:398490252924:web:d1b6348b549183b93b7bf9",
+    measurementId: "G-ZW1ZR8HETY",// ← Comma zaroori hai
+    databaseURL: "https://santramarketshoppingmall-default-rtdb.firebaseio.com/" // ← Last me / nahi lagana
+                };
             } else {
                 console.error("❌ initFirebaseOnce function nahi mila - config.js check karo");
             }
@@ -42,7 +42,7 @@
 
         <!-- 6. cart.js sabse last -->
         <script src="cart.js?v=6"></script>
-
+        <script src="mychoice.js"></script>
         <style>
             :root {
                 --accent: #e40046;
@@ -370,6 +370,8 @@
                 text-align: center;
             }
         </style>
+        <script src="santra-image-link-fix.js?v=23july"></script>
+       <script src="santra-mychoice-sync-fix.js"></script> 
     </head>
 
     <body>
@@ -757,5 +759,16 @@
                     `<div style="padding:40px;text-align:center"><h2>❌ ${t}</h2><p>${m}</p><p><a href="index.html">← Back to Home</a></p></div>`;
             }
         </script>
+        <script src="mychoicesame.js"></script>
+<script>
+<!-- Header me Cart Icon -->
+<a href="mychoice-same.html">
+  <span id="cart-count">0</span> Cart
+</a>
+
+<!-- My Choice Button kahi bhi -->
+<a href="mychoice-same.html#mychoice-tab">My Choice</a>
+
+</script>
     </body>
 </html>

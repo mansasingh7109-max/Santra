@@ -74,13 +74,34 @@ body{background:var(--bg);color:var(--text);padding-bottom:70px}
 </div>
 <div id="ordersList"><div class="loader">⏳ Loading - Share + Checkout - Past Present Future...</div></div>
 </div>
+
 <div class="toast" id="toast"></div>
+<script src="otp-connect.js"></script>  <- Bas ek baar ✅
+
+<div id="directOrderOTPBox" style="background:white;border:2px solid #e40046;border-radius:12px;padding:12px;margin:10px;box-shadow:0 2px 8px rgba(0,0,0,.1)">
+<div style="background:#e40046;color:white;padding:8px;border-radius:8px;text-align:center;font-weight:bold;margin-bottom:10px">🔔 Add OTP for Verification - Admin ne WhatsApp pe OTP bheja hai to yahan add karo</div>
+<input id="orderIdBox2" placeholder="Order ID - SM..." style="width:100%;padding:12px;margin:6px 0;border:1.5px solid #ddd;border-radius:10px;box-sizing:border-box">
+<input id="otpBox2" placeholder="🔐 6 Digit OTP" style="width:100%;padding:12px;margin:6px 0;border:2px solid #25d366;border-radius:10px;font-size:22px;letter-spacing:7px;text-align:center;font-weight:bold;box-sizing:border-box">
+<button onclick="verifyDirectOTP()" style="width:100%;padding:13px;background:#25d366;color:white;border:none;border-radius:10px;font-weight:bold">✅ Verify OTP & Confirm</button>
+<p id="otpStatus2" style="text-align:center;font-weight:bold"></p>
+</div>
+<script>
+async function verifyDirectOTP(){let oid=document.getElementById('orderIdBox2').value.trim();let otp=document.getElementById('otpBox2').value.trim();if(!oid||!otp)return alert('ID OTP dalo');let s=await firebase.database().ref('orders/'+oid+'/otpData').once('value');let d=s.val();if(!d)return alert('OTP Generate nahi hua');if(Date.now()>d.validTill)return alert('Expired');if(d.otp==otp){alert('Verified!');await firebase.database().ref('orders/'+oid).update({status:'Confirmed',otpVerified:true});location.reload();}else alert('Wrong OTP');}
+(function(){let id=localStorage.getItem('lastOrderId')||new URLSearchParams(location.search).get('orderId')||''; if(id) document.getElementById('orderIdBox2').value=id;})();
+</script>
 
 <script src="constants.js?v=3"></script>
 <script src="config.js?v=8"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script src="auto-loader.js"></script>
+
+
 <script src="time-fix.js"></script>
 <script>
 // Bas ye 1 line kahi bhi add karo - Sahi IST Time mil jayega
@@ -105,7 +126,17 @@ if(typeof window.COLLECTIONS==='undefined') window.COLLECTIONS={CUSTOMERS:'custo
 if(typeof window.ADMIN_WHATSAPP==='undefined') window.ADMIN_WHATSAPP="918769171078";
 if(typeof window.BASE_URL==='undefined') window.BASE_URL="https://santramarketshoppingmall.web.app";
 if(typeof window.firebaseConfig==='undefined'){
-  window.firebaseConfig={apiKey:"AIzaSyApXIGoX071cYEvGbfhBF69DB9Kv5YlSMA",authDomain:"santramarketshoppingmall.firebaseapp.com",projectId:"santramarketshoppingmall",storageBucket:"santramarketshoppingmall.appspot.com",messagingSenderId:"398490252924",appId:"1:398490252924:web:d1b6348b549183b93b7bf9",databaseURL:"https://santramarketshoppingmall-default-rtdb.firebaseio.com"};
+  window.firebaseConfig={
+    apiKey: "AIzaSyApXIGoX071cYEvGbfhBF69DB9Kv5YlSMA",
+    authDomain: "santramarketshoppingmall.firebaseapp.com",
+    projectId: "santramarketshoppingmall",
+    storageBucket: "santramarketshoppingmall.appspot.com",
+    messagingSenderId: "398490252924",
+    appId: "1:398490252924:web:d1b6348b549183b93b7bf9",
+    measurementId: "G-ZW1ZR8HETY",// ← Comma zaroori hai
+    databaseURL: "https://santramarketshoppingmall-default-rtdb.firebaseio.com/" // ← Last me / nahi lagana
+    
+  };
 }
 try{if(typeof window.initFirebaseOnce==='function'){window.initFirebaseOnce(window.firebaseConfig);}else if(!firebase.apps.length){firebase.initializeApp(window.firebaseConfig);}}catch(e){console.log(e.message);}
 const db = window.db || firebase.firestore();
