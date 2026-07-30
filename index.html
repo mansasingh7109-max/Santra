@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <title>🛒 SANTRAJET MALL online</title>
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="layout.css" />
@@ -18,14 +20,18 @@ if (location.protocol === "http:" &&!location.hostname.includes("localhost")) {
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+<!--?v= mat lagao -->
 <!-- 2. Boss files BAAD me -->
+  <script src="santra-safe-start.js?v=1"></script>
 <script src="constants.js?v=1"></script>
 <script src="config.js?v=1"></script>
 <script src="./secrets.js"></script>
 <!-- 3. Helpers -->
 <script src="cache-buster.js"></script>
 <script src="order-saver.js"></script>
-<script src="backup-all-image.js"></script>
+
+
 <script src="time-fix.js"></script>
 <script src="double-code-safeguard.js"></script>
 <script src="./js/products.js"></script>
@@ -36,7 +42,7 @@ document.addEventListener("error", function (e) {
  if (e.target.tagName === "IMG") { e.target.src = "https://via.placeholder.com/300?text=No+Image"; }
 }, true);
 // OLD CODE SAVED - purana mychoice.html as script galat tha
-// <script src="mychoice.html"></script> 
+// <script src="mychoice.html">/script> 
 </script>
 <style>
 .main-container{display:flex;min-height:100vh;background:#e8f5e9;}
@@ -150,7 +156,7 @@ body {
   left: 0 !important;
   top: 0 !important;
   width: 85px !important;
-  height: 100vh !important;
+  height: 80vh !important;
   z-index: 999 !important;
   display: block !important;
   visibility: visible !important;
@@ -199,7 +205,7 @@ html, body {
   left: 0 !important;
   top: 0 !important;
   width: 85px !important;
-  height: 98vh !important;
+  height: 90vh !important;
   z-index: 9999 !important;
   transform: none !important;
 }
@@ -227,8 +233,17 @@ body > div:nth-child(2),
 
 </style> 
 
+
+<script src="share.js?v=24july-final"></script>
+
+<script src="santra-image-link-fix.js"></script>
+<script src="santra-mychoice-sync-fix.js"></script>
+
+
 </head>
 <body>
+  <script src="santra-products-fix.js"></script>
+<div id="otpNotifyLine" style="display:none;background:#e40046;color:white;padding:10px;text-align:center;font-weight:bold;position:sticky;top:0;z-index:9999;cursor:pointer" onclick="location.href='share-otp-verify.html?orderId='+(localStorage.getItem('lastOrderId')||'')"><span>🔔</span> <span id="otpNotifyText">Order Placed! Add OTP for Verification - Click Here</span> ➡️</div><script>setInterval(()=>{let id=localStorage.getItem('lastOrderId'); if(id){document.getElementById('otpNotifyLine').style.display='block';}},3000)</script>
 <div class="main-container">
 <div class="left-sidebar">
 <div id="userInfo" class="hide"><div>Hi,</div><b id="userName"></b><span id="oldCustomerBadge" class="hide" style="background:#ff6b00;color:white;padding:2px 4px;border-radius:3px;font-size:8px;margin-top:2px;display:block;"></span></div>
@@ -318,7 +333,19 @@ function loadProducts(){
   });
  });
 }
-function getProductImage(p){ if(p.media&&p.media[0]?.url) return p.media[0].url; if(p.images&&p.images[0]) return p.images[0]; if(p.image) return p.image; return "https://via.placeholder.com/300?text=No+Image"; }
+function getProductImage(p){
+  if(!p) return "";
+  if(p.image && p.image.startsWith('http')) return p.image;
+  if(p.thumbnail && p.thumbnail.startsWith('http')) return p.thumbnail;
+  if(p.media && p.media[0]?.url) return p.media[0].url;
+  if(p.images && p.images[0]){
+    let first = p.images[0];
+    if(typeof first==='string' && first.startsWith('http')) return first;
+    if(first && first.url && first.url.startsWith('http')) return first.url;
+  }
+  if(p.photo && p.photo.startsWith('http')) return p.photo;
+  return "https://via.placeholder.com/300?text=No+Image";
+}
 </script>
 
 <script>
@@ -389,7 +416,10 @@ function renderProducts(products){
   }
   html+=`<div class="product-card">
    <div class="image-slider" style="position:relative;">
-    <button onclick="event.stopPropagation(); toggleMyChoice('${p.id}')" id="heart-${p.id}" style="position:absolute;top:8px;right:8px;background:white;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;z-index:999">🤍</button>
+   
+   <button id="heart-${p.id}" data-id="${p.id}" onclick="event.stopPropagation(); toggleMyChoice('${p.id}',event)" style="position:absolute;top:8px;right:8px;border:none;background:white;border-radius:50%;width:32px;height:32px;font-size:18px;z-index:10">🤍</button>
+   
+   
     ${images.map((img,idx)=>`<img src="${img}" style="display:${idx===0?"block":"none"};width:100%;height:140px;object-fit:contain;" onclick="window.location.href='product.html?id=${p.id}'">`).join("")}
    </div>
    <div class="product-info"><h3>${p.name}</h3><span class="price">₹${p.price}</span><p>Stock: ${p.stock}</p></div>
@@ -406,6 +436,11 @@ function addToCart(product){
  if(window._addingToCart) return;
  window._addingToCart=true; setTimeout(()=>window._addingToCart=false,700);
  if(!product||!product.id){ showToast("❌ Product data missing"); return; }
+ if(!product.image){
+  if(product.images && product.images[0]){
+    product.image = typeof product.images[0]==='string'? product.images[0] : product.images[0].url;
+  } else if(product.thumbnail){ product.image = product.thumbnail; }
+}
  const CART=getCartKey();
  let cartArray=JSON.parse(localStorage.getItem(CART)||"[]");
  let idx=cartArray.findIndex(item=>item.id===product.id);
@@ -454,11 +489,11 @@ function searchProducts(){ let q=document.getElementById("searchInput").value.to
 window.addEventListener("load", updateCartCount);
 window.addEventListener("storage", updateCartCount);
 </script>
-<!-- OLD CODE SAVED - NOT DELETED -->
-<script src="cart.js?v=6"></script>
-<script src="mychoice.js?v=6"></script>
-<script src="category.js"></script>
-<script src="customer-account.js"></script>
+<!-- OLD CODE SAVED - NOT DELETED --><script src="cart.js?v=6"></script><!-- <script src="mychoice.s?v=6"></script> OLD - mychoicesame.js se clash - OLD SAVE -->
+
+<script src="mychoice.js?v=6"></script><script src="category.js"></script>
+<script src="customer-account.js"></script>  <!-- ✅ sahi - yahi replace karna hai -->
+
 <script src="login.js"></script>
 <!-- OLD SAVED: <script src="./secrets.js"></script> duplicate tha - comment me rakha -->
 <!-- OLD SAVED: <script src="cache-buster.js"></script> duplicate tha -->
@@ -514,8 +549,13 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }, 500);
 });
+
+
 </script>
-<script src="santra-products-fix.js"></script>
+
+<script src="cart.js"></script>
+<script src="backup-all-image.js?v=22"></script>
+<script src="home-all-product-image-backup.js?v=24"></script>
 </body>
 </html>
 
